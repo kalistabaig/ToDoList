@@ -1,10 +1,56 @@
-h1 {
-    font-size: 60px;
-    width: 250px;
+body {
+    background-color: rgb(237,237,237);
+}
+.title {
+    font-size: 100px;
+    width: 500px;
     color: pink;
     padding: 0px 0px 0px 20px; 
-    font-family: 'Shadows Into Light', cursive;
-    text-shadow:  3px 3px 1px black;
-    border-style: dashed;
-    border-color: black;
+    text-shadow:  2px 2px 1px black;
 }
+
+.container {
+    display: flex;
+}
+
+.lists-header {
+    color: pink;
+
+}
+
+.list {
+    list-style-type: circle;
+
+}
+
+#todoText {
+    width: 200px;
+}
+
+.nameSpan {
+    width: 200px;
+    display: inline-block;
+}
+
+.nameInput {
+    width: 194px;
+    display: none;
+
+}
+
+.deleteButton {
+    margin: 0px 0px 0px 30px; 
+}
+
+.saveButton {
+    display: none;
+}
+
+.tasks-container{
+    display: flex;
+    flex-direction: column;
+}
+
+/* .editButton {
+    padding: 0px, 30px;
+} */
