@@ -2,47 +2,48 @@
 <html>
     <head>
         <link href="styles/style.css" rel="stylesheet">
-        <link href="https://fonts.googleapis.com/css?family=Shadows+Into+Light&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Ubuntu&display=swap" rel="stylesheet">
         <title>Kali's To Do List</title>
     </head>
     <body>
-        <h1 class="title">Organize It</h1>
+        <h1 class="title">What's On The List?</h1>
 
-        <div class="container">
-            <div class="lists-display">
-                <h1 class="lists-header">My Lists</h1>
-                <ul class="lists">
-                    <li class="list">Programming</li>
-                    <li class="list">Excercise</li>
-                    <li class="list">Christmas Shopping</li>
-                    <li class="list">Learning Korean</li>
-                </ul>
-                <div class="list-input">
-                    <input id="list-name" type="text" placeholder="Ex. Grocery Items"> 
-                    <button id="create-new-list">+</button>
+        <div class="container"> 
+
+            <div class="central-components">
+                <div class="lists-display">
+                    <h1 class="lists-header">My Lists</h1>
+                    <div class="lists-container">
+                        <ul id="lists" class="lists"></ul>
+                    </div>
+                    <div class="list-input">
+                        <input id="list-name" type="text" placeholder="Ex. Grocery Items"> 
+                        <button id="create-new-list-button">+</button>
+                    </div>
+                </div>
+                
+                <div class="tasks-container">
+                    <h1 class="list-title">My List</h1>
+                    <ol id="taskList"></ol>
+                    <div class="input">
+                        <label for="todoText">Enter:</label>
+                        <input id="todoText" type="text"> 
+                        <select id="prioritySelector" >
+                            <option value=0>None</option>
+                            <option value=1>Low</option>
+                            <option value=2>Medium</option>
+                            <option value=3>High</option>
+                            <option value=4>Critical</option>
+                        </select>
+                        <button id="addButton">Add</button>
+                    </div>
                 </div>
             </div>
-            
-            <div class="tasks-container">
-                <h1 class="list-title">My List</h1>
-                <ol id="taskList">
-                    <li>Example</li>
-                    <li>Example</li>
-                    <li>Example</li>
-                </ol>
-                <div class="input">
-                    <label for="todoText">Enter:</label>
-                    <input id="todoText" type="text"> 
-                    <select id="prioritySelector" >
-                        <option value=0>None</option>
-                        <option value=1>Low</option>
-                        <option value=2>Medium</option>
-                        <option value=3>High</option>
-                        <option value=4>Critical</option>
-                    </select>
-                    <button id="addButton">Add</button>
-                </div>
+
+            <div class="bottom-components">
+             
             </div>
+           
             
         </div>
    

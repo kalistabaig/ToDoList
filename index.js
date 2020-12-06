@@ -1,15 +1,83 @@
-const newList = document.getElementById("create-new-list");
-newList.onclick = createNewListClick();
+const newListButton = document.getElementById("create-new-list-button");
+newListButton.onclick = createNewListClick;
 const addButton = document.getElementById("addButton");
 addButton.onclick = addButtonClick;
-var tasks = [];
-loadTasks();
+let information;
+let currentList;
+loadInformation();
 
 function createNewListClick() {
-    const listName = document.getElementById("list-name").value;
-    addListToApi(listName, addListToUI);
+    let newList = {
+        listName: document.getElementById("list-name").value,
+        listItems: []
+    }
+    document.getElementById("list-name").value ='';
+    addListToApi(newList, addListToUI);
 }
 
+function addListToApi(list, callback) {
+    const fetchOptions = {
+        method: "POST",
+        body: JSON.stringify(list),        
+        mode: 'cors',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+    }
+    
+    fetch("http://localhost:4000/list", fetchOptions) //send button on postman, mae s actual call to server
+    .then((response) =>{
+        return response.json();
+    })
+    .then((data) => {
+        var list = data;
+        information.push(list);
+        callback(list);
+        const listDisplay = document.getElementById('taskList');
+        while (listDisplay.firstChild) {
+            listDisplay.removeChild(listDisplay.firstChild);
+        }
+        for (let task of list.listItems){
+            addTaskToUI(task);
+        }
+    })
+
+
+}
+
+function addListToUI(list) {
+    let newList = document.createElement('LI');
+    newList.addEventListener('click', displayList)
+    newList.setAttribute('data-id', list.id)
+    newList.classList.add('list');
+    newList.innerHTML = list.listName;
+
+    const deleteListButton = document.createElement("button");
+    deleteListButton.className = "delete-list-button";
+    deleteListButton.onclick = deleteListClick;
+    deleteListButton.innerText = "x";
+    
+    newList.appendChild(deleteListButton);
+    console.log(newList);
+    document.getElementById("lists").appendChild(newList);
+
+}
+
+function displayList(e) {
+    let selectedListId = e.target.dataset.id;
+    let selectedList = information.find(list => list.id == selectedListId).listItems;
+    const listDisplay = document.getElementById('taskList');
+    while (listDisplay.firstChild) {
+        listDisplay.removeChild(listDisplay.firstChild);
+    }
+    let listItem;
+    for (listItem of selectedList) {
+        addTaskToUI(listItem);
+    }
+    
+
+}
 
 function addButtonClick() {
     var newTask = {
@@ -19,17 +87,40 @@ function addButtonClick() {
 
     document.getElementById('todoText').value = "";
     document.getElementById('prioritySelector').value = 0;
-    addTaskToApi(newTask, addTaskToUI);
+    addTaskToApi(newTask, addTaskToUI);  
+}
+
+function addTaskToApi(task, callback){ //request like in postman
+    const fetchOptions = {
+        method: "POST",
+        body: JSON.stringify(task),        
+        mode: 'cors',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+    }
     
-   
+    fetch("http://localhost:4000/list/", fetchOptions) //send button on postman, mae s actual call to server
+    .then((response) =>{
+        return response.json();
+    })
+    .then((data) => {
+        var task = data;
+        tasks.push(task);
+        callback(task)
+    })
+
 }
 
 function addTaskToUI(task){
-
-    console.log(task);
     
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.onclick = deleteButtonClick;
     const listItem = document.createElement("li");
-    listItem.setAttribute("data-id",task.id)
+    listItem.setAttribute("data-id",task.id);
+    listItem.classList.add('list-item');
     const nameSpan = document.createElement("span");
     nameSpan.className = "nameSpan";
     nameSpan.innerHTML = task.name;
@@ -51,11 +142,6 @@ function addTaskToUI(task){
     }
     prioritySelect.value = task.priority;
 
-    const deleteItem = document.createElement("button");
-    deleteItem.className = "deleteButton";
-    deleteItem.onclick = deleteButtonClick;
-    deleteItem.innerText = "Delete"
-
     const editButton = document.createElement("button");
     editButton.className = "editButton";
     editButton.onclick = editButtonClick;
@@ -66,10 +152,10 @@ function addTaskToUI(task){
     saveButton.onclick = saveButtonClick;
     saveButton.innerText = "Save";
 
+    listItem.appendChild(checkbox);
     listItem.appendChild(nameSpan);
     listItem.appendChild(nameInput);
     listItem.appendChild(prioritySelect);
-    listItem.appendChild(deleteItem);
     listItem.appendChild(editButton);
     listItem.appendChild(saveButton);
     
@@ -77,39 +163,28 @@ function addTaskToUI(task){
     document.getElementById("taskList").appendChild(listItem);
 }
 
-function addTaskToApi(task, callback){ //request like in postman
-    const fetchOptions = {
-        method: "POST",
-        body: JSON.stringify(task),        
-        mode: 'cors',
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        },
-    }
-    
-    fetch("http://kalistabaig.me:4000/task", fetchOptions) //send button on postman, mae s actual call to server
-    .then((response) =>{
-        return response.json();
-    })
-    .then((data) => {
-        var task = data;
-        tasks.push(task);
-        callback(task)
-    })
 
-}
 
-function loadTasks() {
-    fetch("http://kalistabaig.me:4000/task") //fetch returns a promise        by default fetch is a get
+function loadInformation() {
+    fetch("http://localhost:4000/task") //fetch returns a promise        by default fetch is a get
     .then((response) => response.json())
     .then((data) => {
-        tasks = data
-        var task;
-        for (task of tasks){
+        information = data; //was tasks
+        let list;
+        for (list of information) {
+            addListToUI(list);
+        }
+        let defaultList = information[0];
+        currentList = information[0].id;
+        let task;
+        for (task of defaultList.listItems){
             addTaskToUI(task);
         }
     })   
+}
+
+function deleteListClick() {
+    console.log('user trying to delete a list');
 }
 
 function deleteButtonClick(){
@@ -118,7 +193,7 @@ function deleteButtonClick(){
     const fetchOptions = {
         method: "DELETE"
     }
-    fetch("http://kalistabaig.me:4000/task/" + taskId, fetchOptions)
+    fetch("http://localhost:4000/task/" + taskId, fetchOptions)
     .then((response) => console.log("post status:" + response.status))
 
 }
@@ -166,7 +241,7 @@ function saveButtonClick(){
             'Content-Type': 'application/json'
         }
     }
-    fetch("http://kalistabaig.me:4000/task/" + taskId, fetchOptions)
+    fetch("http://localhost:4000/task/" + taskId, fetchOptions)
     .then((response) => console.log("post status:" + response.status))
 
 }
