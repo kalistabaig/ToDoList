@@ -26,7 +26,7 @@ function addListToApi(list, callback) {
         },
     }
     
-    fetch("http://localhost:4000/list", fetchOptions) //send button on postman, mae s actual call to server
+    fetch("http://kalistabaig.com:4000/list", fetchOptions) //send button on postman, mae s actual call to server
     .then((response) =>{
         return response.json();
     })
@@ -98,7 +98,7 @@ function addTaskToApi(task, callback){ //request like in postman
         },
     }
     
-    fetch("http://localhost:4000/task/", fetchOptions) //send button on postman, mae s actual call to server
+    fetch("http://kalistabaig.com:4000/task/", fetchOptions) //send button on postman, mae s actual call to server
     .then((response) =>{
         return response.json();
     })
@@ -159,7 +159,7 @@ function addTaskToUI(task){
 }
 
 function loadInformation() {
-    fetch("http://localhost:4000/task") //fetch returns a promise        by default fetch is a get
+    fetch("http://kalistabaig.com:4000/task") //fetch returns a promise        by default fetch is a get
     .then((response) => response.json())
     .then((data) => {
         information = data; //was tasks
@@ -184,7 +184,7 @@ function deleteListClick() {
     const fetchOptions = {
         method: "DELETE"
     }
-    fetch("http://localhost:4000/list/" + listId, fetchOptions)
+    fetch("http://kalistabaig.com:4000/list/" + listId, fetchOptions)
     .then((response) => console.log("post status:" + response.status))
 }
 
@@ -195,7 +195,7 @@ function deleteButtonClick(){
         const fetchOptions = {
             method: "DELETE"
         }
-        fetch("http://localhost:4000/task/" + taskId + "/" +selectedList.id, fetchOptions)
+        fetch("http://kalistabag.com:4000/task/" + taskId + "/" +selectedList.id, fetchOptions)
         .then((response) => console.log("post status:" + response.status))
     },1000)
 }
@@ -243,7 +243,7 @@ function saveButtonClick(){
             'Content-Type': 'application/json'
         }
     }
-    fetch("http://localhost:4000/task/" + taskId, fetchOptions)
+    fetch("http://kalistabaig.com:4000/task/" + taskId, fetchOptions)
     .then((response) => console.log("post status:" + response.status))
 
 }
