@@ -3,7 +3,7 @@ newListButton.onclick = createNewListClick;
 const addButton = document.getElementById("addButton");
 addButton.onclick = addButtonClick;
 let information;
-let currentList;
+let selectedList;
 loadInformation();
 
 function createNewListClick() {
@@ -26,7 +26,7 @@ function addListToApi(list, callback) {
         },
     }
     
-    fetch("http://kalistabaig.com:4000/list", fetchOptions) //send button on postman, mae s actual call to server
+    fetch("http://localhost:4000/list", fetchOptions) //send button on postman, mae s actual call to server
     .then((response) =>{
         return response.json();
     })
@@ -42,11 +42,10 @@ function addListToApi(list, callback) {
             addTaskToUI(task);
         }
     })
-
-
 }
 
 function addListToUI(list) {
+    console.log('list', list);
     let newList = document.createElement('LI');
     newList.addEventListener('click', displayList)
     newList.setAttribute('data-id', list.id)
@@ -61,30 +60,28 @@ function addListToUI(list) {
     newList.appendChild(deleteListButton);
     console.log(newList);
     document.getElementById("lists").appendChild(newList);
-
 }
 
 function displayList(e) {
     let selectedListId = e.target.dataset.id;
-    let selectedList = information.find(list => list.id == selectedListId).listItems;
+    selectedList = information.find(list => list.id == selectedListId);
+    let tasks = selectedList.listItems;
     const listDisplay = document.getElementById('taskList');
     while (listDisplay.firstChild) {
         listDisplay.removeChild(listDisplay.firstChild);
     }
-    let listItem;
-    for (listItem of selectedList) {
-        addTaskToUI(listItem);
+    document.getElementById('list-title').innerHTML = selectedList.listName;
+    for (let task of tasks) {
+        addTaskToUI(task);
     }
-    
-
 }
 
 function addButtonClick() {
     var newTask = {
         name: document.getElementById('todoText').value,
+        list_id: selectedList.id,
         priority: document.getElementById('prioritySelector').value
     }
-
     document.getElementById('todoText').value = "";
     document.getElementById('prioritySelector').value = 0;
     addTaskToApi(newTask, addTaskToUI);  
@@ -101,13 +98,13 @@ function addTaskToApi(task, callback){ //request like in postman
         },
     }
     
-    fetch("http://kalistabaig.com:4000/list/", fetchOptions) //send button on postman, mae s actual call to server
+    fetch("http://localhost:4000/task/", fetchOptions) //send button on postman, mae s actual call to server
     .then((response) =>{
         return response.json();
     })
     .then((data) => {
         var task = data;
-        tasks.push(task);
+        information.find(list => list.id == task.list_id).listItems.push(task);
         callback(task)
     })
 
@@ -158,15 +155,11 @@ function addTaskToUI(task){
     listItem.appendChild(prioritySelect);
     listItem.appendChild(editButton);
     listItem.appendChild(saveButton);
-    
-
     document.getElementById("taskList").appendChild(listItem);
 }
 
-
-
 function loadInformation() {
-    fetch("http://kalistabaig.com:4000/task") //fetch returns a promise        by default fetch is a get
+    fetch("http://localhost:4000/task") //fetch returns a promise        by default fetch is a get
     .then((response) => response.json())
     .then((data) => {
         information = data; //was tasks
@@ -175,8 +168,10 @@ function loadInformation() {
             addListToUI(list);
         }
         let defaultList = information[0];
-        currentList = information[0].id;
+        console.log('default list' , defaultList);
+        selectedList = defaultList;
         let task;
+        document.getElementById('list-title').innerHTML = defaultList.listName;
         for (task of defaultList.listItems){
             addTaskToUI(task);
         }
@@ -184,18 +179,25 @@ function loadInformation() {
 }
 
 function deleteListClick() {
-    console.log('user trying to delete a list');
-}
-
-function deleteButtonClick(){
-    document.getElementById("taskList").removeChild(this.parentNode);
-    var taskId = this.parentNode.getAttribute("data-id");
+    document.getElementById('lists').removeChild(this.parentNode);
+    let listId = this.parentNode.getAttribute("data-id");
     const fetchOptions = {
         method: "DELETE"
     }
-    fetch("http://kalistabaig.com:4000/task/" + taskId, fetchOptions)
+    fetch("http://localhost:4000/list/" + listId, fetchOptions)
     .then((response) => console.log("post status:" + response.status))
+}
 
+function deleteButtonClick(){
+    setTimeout(() => {
+        document.getElementById("taskList").removeChild(this.parentNode);
+        var taskId = this.parentNode.getAttribute("data-id");
+        const fetchOptions = {
+            method: "DELETE"
+        }
+        fetch("http://localhost:4000/task/" + taskId + "/" +selectedList.id, fetchOptions)
+        .then((response) => console.log("post status:" + response.status))
+    },1000)
 }
 
 function editButtonClick(){
@@ -241,7 +243,7 @@ function saveButtonClick(){
             'Content-Type': 'application/json'
         }
     }
-    fetch("http://kalistabaig.com:4000/task/" + taskId, fetchOptions)
+    fetch("http://localhost:4000/task/" + taskId, fetchOptions)
     .then((response) => console.log("post status:" + response.status))
 
 }
