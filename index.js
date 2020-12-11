@@ -1,15 +1,16 @@
+const baseURL = 'http://localhost:4000';
+// const baseURL = 'http://kalistabaig.com:4000';
 const newListButton = document.getElementById("create-new-list-button");
 newListButton.onclick = createNewListClick;
 const addButton = document.getElementById("addButton");
 addButton.onclick = addButtonClick;
-let information;
+let lists;
 let selectedList;
-loadInformation();
+getLists();
 
 function createNewListClick() {
     let newList = {
-        listName: document.getElementById("list-name").value,
-        listItems: []
+        name: document.getElementById("list-name").value,
     }
     document.getElementById("list-name").value ='';
     addListToApi(newList, addListToUI);
@@ -26,31 +27,30 @@ function addListToApi(list, callback) {
         },
     }
     
-    fetch("http://kalistabaig.com:4000/list", fetchOptions) //send button on postman, mae s actual call to server
+    fetch(`${baseURL}/lists`, fetchOptions) //send button on postman, mae s actual call to server
     .then((response) =>{
         return response.json();
     })
     .then((data) => {
         var list = data;
-        information.push(list);
+        lists.push(list);
         callback(list);
         const listDisplay = document.getElementById('taskList');
         while (listDisplay.firstChild) {
             listDisplay.removeChild(listDisplay.firstChild);
         }
-        for (let task of list.listItems){
+        for (let task of list.tasks){
             addTaskToUI(task);
         }
     })
 }
 
 function addListToUI(list) {
-    console.log('list', list);
     let newList = document.createElement('LI');
-    newList.addEventListener('click', displayList)
-    newList.setAttribute('data-id', list.id)
+    newList.addEventListener('click', displayList);
+    newList.setAttribute('data-id', list.id);
     newList.classList.add('list');
-    newList.innerHTML = list.listName;
+    newList.innerHTML = list.name;
 
     const deleteListButton = document.createElement("button");
     deleteListButton.className = "delete-list-button";
@@ -58,20 +58,19 @@ function addListToUI(list) {
     deleteListButton.innerText = "x";
     
     newList.appendChild(deleteListButton);
-    console.log(newList);
     document.getElementById("lists").appendChild(newList);
 }
 
 function displayList(e) {
-    let selectedListId = e.target.dataset.id;
-    selectedList = information.find(list => list.id == selectedListId);
-    let tasks = selectedList.listItems;
     const listDisplay = document.getElementById('taskList');
     while (listDisplay.firstChild) {
         listDisplay.removeChild(listDisplay.firstChild);
     }
-    document.getElementById('list-title').innerHTML = selectedList.listName;
-    for (let task of tasks) {
+    let selectedListId = e.target.dataset.id;
+    selectedList = lists.find(list => list.id == selectedListId);
+    console.log('selected list ', selectedList);
+    document.getElementById('list-title').innerHTML = selectedList.name;
+    for (let task of selectedList.tasks) {
         addTaskToUI(task);
     }
 }
@@ -87,7 +86,7 @@ function addButtonClick() {
     addTaskToApi(newTask, addTaskToUI);  
 }
 
-function addTaskToApi(task, callback){ //request like in postman
+function addTaskToApi(task, callback) { 
     const fetchOptions = {
         method: "POST",
         body: JSON.stringify(task),        
@@ -98,20 +97,19 @@ function addTaskToApi(task, callback){ //request like in postman
         },
     }
     
-    fetch("http://kalistabaig.com:4000/task/", fetchOptions) //send button on postman, mae s actual call to server
+    fetch(`${baseURL}/tasks`, fetchOptions) 
     .then((response) =>{
         return response.json();
     })
     .then((data) => {
         var task = data;
-        information.find(list => list.id == task.list_id).listItems.push(task);
+        lists.find(list => list.id == task.list_id).tasks.push(task);
         callback(task)
     })
 
 }
 
 function addTaskToUI(task){
-    
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
     checkbox.onclick = deleteButtonClick;
@@ -127,7 +125,6 @@ function addTaskToUI(task){
     const prioritySelect = document.createElement("select");
     prioritySelect.className = "prioritySelect";
     
-
     var i;
     optionNames = ["None", "Low", "Medium", "High", "Critical"];
 
@@ -158,21 +155,18 @@ function addTaskToUI(task){
     document.getElementById("taskList").appendChild(listItem);
 }
 
-function loadInformation() {
-    fetch("http://kalistabaig.com:4000/task") //fetch returns a promise        by default fetch is a get
+function getLists() {
+    fetch(`${baseURL}/lists`)
     .then((response) => response.json())
     .then((data) => {
-        information = data; //was tasks
-        let list;
-        for (list of information) {
+        lists = data; //was tasks
+        for (let list of lists) {
             addListToUI(list);
         }
-        let defaultList = information[0];
-        console.log('default list' , defaultList);
+        let defaultList = lists[0];
         selectedList = defaultList;
-        let task;
         document.getElementById('list-title').innerHTML = defaultList.listName;
-        for (task of defaultList.listItems){
+        for (let task of defaultList.listItems){
             addTaskToUI(task);
         }
     })   
@@ -184,7 +178,7 @@ function deleteListClick() {
     const fetchOptions = {
         method: "DELETE"
     }
-    fetch("http://kalistabaig.com:4000/list/" + listId, fetchOptions)
+    fetch(`${baseURL}/lists/${listId}`, fetchOptions)
     .then((response) => console.log("post status:" + response.status))
 }
 
@@ -195,7 +189,7 @@ function deleteButtonClick(){
         const fetchOptions = {
             method: "DELETE"
         }
-        fetch("http://kalistabag.com:4000/task/" + taskId + "/" +selectedList.id, fetchOptions)
+        fetch(`${baseURL}/tasks/${taskId}`, fetchOptions)
         .then((response) => console.log("post status:" + response.status))
     },1000)
 }
@@ -225,8 +219,8 @@ function saveButtonClick(){
 
     const newPriority = this.parentNode.getElementsByClassName("prioritySelect")[0].value;
 
-    var taskId = this.parentNode.getAttribute("data-id");
-    var task = tasks.find(task => task.id == taskId);
+    const taskId = this.parentNode.getAttribute("data-id");
+    const task = selectedList.tasks.find(task => task.id == taskId);
     if(!task){
         console.log("Task not found");
         return;
@@ -243,7 +237,7 @@ function saveButtonClick(){
             'Content-Type': 'application/json'
         }
     }
-    fetch("http://kalistabaig.com:4000/task/" + taskId, fetchOptions)
+    fetch(`${baseURL}/tasks/${taskId}`, fetchOptions)
     .then((response) => console.log("post status:" + response.status))
 
 }
